@@ -1,26 +1,10 @@
 {
-    "version": 2,
-    "builds": [
-        {
-            "src": "api/index.py",
-            "use": "@vercel/python"
-        },
-        {
-            "src": "build_files.sh",
-            "use": "@vercel/static-build"
-        }
-    ],
-    "routes": [
-        {
-            "src": "/static/(.*)",
-            "dest": "/static/$1"
-        },
-        {
-            "src": "/(.*)",
-            "dest": "api/index.py"
-        }
-    ],
-    "env": {
-        "PYTHONPATH": "@"
-    }
+  "builds": [
+    { "src": "myproject/asgi.py", "use": "@vercel/python" },
+    { "src": "manage.py", "use": "@vercel/static-build", "config": { "distDir": "staticfiles" } }
+  ],
+  "routes": [
+    { "src": "/static/(.*)", "dest": "/static/$1" },
+    { "src": "/(.*)", "dest": "myproject/asgi.py" }
+  ]
 }
