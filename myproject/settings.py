@@ -1,16 +1,18 @@
 import os
 from pathlib import Path
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-your-secret-key-here'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-your-secret-key-here')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = [ '.vercel.app', '127.0.0.1','.now.sh' ]
+# Allow all hosts for Railway - they'll handle routing
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
@@ -25,6 +27,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ADD THIS
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -53,22 +56,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'myproject.wsgi.application'
 
-# Database
+# Database - Use dj_database_url for Railway
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'railway',
-        'USER': 'postgres',
-        'PASSWORD':'cnyvnMycmhYncsYCNdbUiYNmUKJwfWeo',
-        'HOST':'yamanote.proxy.rlwy.net',
-        'PORT':'33450',
-    }
+    'default': dj_database_url.config(
+        default='postgresql://postgres:cnyvnMycmhYncsYCNdbUiYNmUKJwfWeo@yamanote.proxy.rlwy.net:33450/railway',
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 }
 
-# ============ FIX: ADD AUTHENTICATION BACKENDS ============
+# ============ AUTHENTICATION BACKENDS ============
 AUTHENTICATION_BACKENDS = [
-    'authapp.backends.PhoneAuthBackend',  # Your custom phone authentication
-    'django.contrib.auth.backends.ModelBackend',  # Default backend as fallback
+    'authapp.backends.PhoneAuthBackend',
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 # Custom User Model
@@ -98,11 +98,17 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles_build,static")
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # CORRECTED
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 
+# WhiteNoise configuration
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Media files (if needed)
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, "static/images")
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Create static directory if it doesn't exist
 static_dir = BASE_DIR / "static"
@@ -116,8 +122,15 @@ LOGIN_URL = '/auth/login/'
 LOGIN_REDIRECT_URL = '/auth/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
-# ============ ADD DEBUGGING ============
-import logging
+# Security settings for production
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# ============ LOGGING ============
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
