@@ -61,14 +61,15 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 ASGI_APPLICATION = 'myproject.asgi.application'  # Required for Vercel
 
 # Database (PostgreSQL - Railway)
+
 DATABASES = {
-    'default': {
+     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'railway',
         'USER': 'postgres',
-        'PASSWORD': 'immzOuKTFHswMiRHlGYnuRdyracwndUk',
-        'HOST': 'yamabiko.proxy.rlwy.net',
-        'PORT': '49532',
+        'PASSWORD': 'NyCtLgzfsgOltdLmuhYyFFESxoYsYAGd',
+        'HOST': 'turntable.proxy.rlwy.net',
+        'PORT': '27483',
     }
 }
 
